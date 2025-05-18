@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"> 
+    <style>
+        body {
+            background-color: #1f1f1f;
+            color: #eeeeee;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 2vw;
+            user-select: none;
+        }
+        :focus { 
+            outline: none;
+        }
+        #root {
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .panel {
+            display: block;
+            width: 5vw;
+              height: 100%;
+            box-sizing: border-box;
+              flex-shrink: 0;
+        }
+        .panel.active {
+            width: 25vw;
+        }
+        .panel-item {
+            display: flex;
+            align-items: center;
+        }
+        .panel-item-icon {
+            width: 5vw;
+        }
+        .panel-item-text {
+            display: none;
+        }
+        .panel.active .panel-item-text {
+            display: block;
+        }
+        .search-input {
+            width: 19vw;
+            height: 4vw;
+            font-size: 2vw;
+        }
+        .search-history {
+            padding: 1vw 0.5vw;
+            margin: 0 0 0 5vw;
+            width: 17.5vw;
+        }
+        .search-history.selected {
+            outline: 6px solid #4a90e2;
+            border-radius: 8px;
+            box-shadow: 0 0 2vw 1vw rgba(74,144,226, 0.7);
+            transform: translate(0, 0) scale(1.1);
+              transition: transform 0.3s ease;
+        }
+        .main {
+            display: flex;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            width: 5vw;
+              height: 100%;
+            align-items: center;
+        }
+        .main.active {
+            width: 100vw;
+        }
+        .main .list {
+            display: none;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            overflow-y: auto;
+            width: 75vw;
+              height: 100%;
+        }
+        .main.active .list {
+            display: block;
+        }
+        .main .list.active {
+            width: 95vw;
+        }
+        .loading {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading img {
+            width: 8vw;
+            height: 8vw;
+        }
+        .item {
+            display: inline-block;
+            width: 20%;
+            user-select: none;
+        }
+        .item a {
+            margin: 24px;
+            padding: 1%;
+        }
+        .item-image {
+            position: relative;
+            overflow: hidden;
+            padding-top: 140%;
+            border-radius: 4px;
+            margin-bottom: 1vh;
+            border: none;
+        }
+        .item-image-poster {
+            object-fit: cover;
+            object-position: center;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            border-radius: 4px;
+            opacity: 0.9; 
+        }
+        .item-image-subs {
+            position: absolute;
+            top: 0.5vw;
+            left: 0.5vw;
+            width: 3vw;
+            height: 3vw;
+        }
+        .item div {
+            font-size: 2vw;
+            overflow: hidden;
+            width: 100%;
+        }
+        .item a {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+        }
+        .item.selected a {
+            outline: 6px solid #4a90e2;
+            border-radius: 8px;
+            box-shadow: 0 0 2vw 1vw rgba(74,144,226, 0.7);
+            transform: translate(0, 0) scale(1.1);
+              transition: transform 0.3s ease;
+        }
+        .item.selected img {
+            opacity: 1;
+        }
+        .item .item-title {
+            display: inline-block;
+            color: #e79899;
+            font-weight: 500;
+            text-align: center;
+        }
+        .item.selected .item-title {
+            color: #a85a9d;
+        }
+
+        .details {
+            display: none;
+            width: 95vw;
+              height: 100%;
+        }
+        .details.active {
+            display: block;
+        }
+        .details-about {
+            overflow: hidden;
+            height: 70%;
+            position: relative;
+        }
+        .details-image {
+            padding: 1vw 2vw 1vw 0;
+            width: 20%;
+            float: left;
+            position: relative;
+        }
+        .details-image-poster {
+            width: 100%;
+            max-height: 50vh;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .details-image-subs {
+            position: absolute;
+            top: 1.5vw;
+            left: 0.5vw;
+            width: 3vw;
+            height: 3vw;
+        }
+        .details-info-row {
+            display: flex;
+            flex-direction: row;
+        }
+        .details-info-col {
+            flex: 1;
+        }
+        .details-info-title {
+            font-size: 3vw;
+            font-weight: 500;
+            color: #fbe0d0;
+            margin: 1vw 0;
+        }
+        .details-info-subtitle {
+            color: #d0baae;
+            margin: 1vw 0;
+        }
+        .details-info-item-handle {
+            color: #d0baae;
+        }
+        .details-info-item {
+            color: #fbe0d0;
+            margin: 1vw 0;
+        }
+        .details-info-description {
+            color: #fbe0d0;
+            margin: 1vw 0;
+        }
+        .details-info-description::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2em;
+            background: linear-gradient(to bottom, rgba(31,31,31,0), rgba(31,31,31,1));
+            pointer-events: none;
+        }
+        .details-group-list {
+            overflow: hidden;
+            height: 30%;
+        }
+        .details-group {
+            margin: 2vh 0;
+        }
+        .details-group-name {
+            color: #d0baae;
+        }
+        .details-group-videos {
+            display: flex;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .details-video {
+            display: block;
+            flex: 0 0 auto;
+            color: #fbe0d0;
+            padding: 0.5vw;
+            margin: 2vw 1.5vw;
+        }
+        .details-video.selected {
+            outline: 6px solid #4a90e2;
+            border-radius: 8px;
+            box-shadow: 0 0 1vw 0.5vw rgba(74,144,226, 0.7);
+            transform: translate(0, 0) scale(1.2);
+              transition: transform 0.3s ease;
+        }
+
+        .player-container {
+            display: none;
+            box-sizing: border-box;
+              flex-shrink: 0;
+            width: 100%;
+              height: 100%;
+            background-color: #000000;
+        }
+        .player-container.active {
+            display: block;
+        }
+        .player {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+              height: 100%;
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <!-- <div id="debug" style="position: absolute; top: 0; height: 100%; left: 80%; width: 20%; background-color: #FFF; color: #000;"></div> -->
+    
+    <!-- <script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.2/dist/fetch.umd.js"></script> -->
+    <script src="scripts/fetch.umd.js"></script>
+    
+    <!-- <script src="https://cdn.jsdelivr.net/npm/smoothscroll-polyfill@0.4.4/dist/smoothscroll.js"></script> -->
+    <script src="scripts/smoothscroll.js"></script>
+    
+    <!-- <script src="https://unpkg.com/mithril@2.3.0/mithril.js"></script> -->
+    <!-- mithril.js is additionaly repacked to ES5 support via https://jstool.gitlab.io/babel-es6-to-es5/ -->
+    <script src="scripts/mithril.js"></script>
+    
+    <script>
+    var root = document.getElementById("root");
+
+    function log(text) {
+        // document.getElementById("debug").innerHTML = "<p>" + text + "</p>" + document.getElementById("debug").innerHTML;
+    }
+
+    var LIST_URL = "";
+    var DETAILS_URL = "https://kinakipa.site/api/user/player/information?id=";
+
+    var KEY_LEFT = 37;
+    var KEY_RIGHT = 39;
+    var KEY_UP = 38;
+    var KEY_DOWN = 40;
+    var KEY_ENTER = 13;
+    var KEY_BACK = 461;
+
+    var ACTIVE_PANEL = "panel";
+    var ACTIVE_MAIN = "main";
+    var ACTIVE_DETAILS = "details";
+    var ACTIVE_PLAYER = "player";
+
+    var LOAD_LOCK_TIMEOUT = 5000;
+
+    var state = {
+        active: ACTIVE_MAIN,
+        main: {
+            loadError: null,
+            movies: null,  // null is not loaded yet
+            filteredMovies: [],  // movies that slows to user
+            selection: 0,
+            filter: "",
+            previousFilters: JSON.parse(localStorage.getItem("filters") || "[]"),
+            previousFiltersSelection: -1,
+            maxPreviousFiltersSize: 5,
+            rows: 5,
+            maxList: 50,
+        },
+        details: {
+            movie: null,
+            loadError: null,
+            loadLock: Date.now() - LOAD_LOCK_TIMEOUT - 1,
+            details: null,  // null is not loaded yet
+            totalVideos: 0,
+            minVideosToStorePosition: 7,
+            groupSelection: 0,
+            episodeSelection: 0,
+        },
+        player: {
+            video: null,
+        },
+    };
+
+    var BE_MAP = {
+        "а": ["a"],
+        "б": ["b"],
+        "в": ["v"],
+        "г": ["h"],
+        "ґ": ["g"],
+        "д": ["d"],
+        "е": ["ie", "je", "e"],
+        "ё": ["io", "jo", "o"],
+        "ж": ["ž"],
+        "з": ["z", "ź"],
+        "і": ["i"],
+        "й": ["j"],
+        "к": ["k"],
+        "л": ["l", "ł"],
+        "м": ["m"],
+        "н": ["n", "ń"],
+        "о": ["o"],
+        "п": ["p"],
+        "р": ["r"],
+        "с": ["s", "ś"],
+        "т": ["t"],
+        "у": ["u"],
+        "ў": ["ŭ"],
+        "ф": ["f"],
+        "х": ["ch"],
+        "ц": ["c", "ć"],
+        "ч": ["č"],
+        "ш": ["š"],
+        "ы": ["y"],
+        "ь": [""],
+        "э": ["e"],
+        "ю": ["iu", "ju", "u"],
+        "я": ["ia", "ja", "a"],
+        "'": [""],
+        "’": [""],
+        "и": ["i"],
+        "щ": ["šč"],
+        "ъ": [""]
+    };
+    var CONSONANTS = {};
+    "бвгґджзйклмнпрстўфхцчшщ".split("").forEach(function (char) {
+        CONSONANTS[char] = true;
+    });
+    var CONSONANTS_SOFT = {};
+    "злнсц".split("").forEach(function (char) {
+        CONSONANTS_SOFT[char] = true;
+    });
+    var L_SOFT = {};
+    "еёіьюя".split("").forEach(function (char) {
+        L_SOFT[char] = true;
+    });
+    var L = "л";
+    var SOFT = "ь";
+    var SIMPLE_MAP = {
+        "ž": "z",
+        "ź": "z",
+        "ł": "l",
+        "ń": "n",
+        "ŭ": "u",
+        "š": "s",
+        "ś": "s",
+        "č": "c",
+        "ć": "c",
+        "Ž": "Z",
+        "Ź": "Z",
+        "Ł": "L",
+        "Ń": "N",
+        "Ŭ": "U",
+        "Š": "S",
+        "Ś": "S",
+        "Č": "C",
+        "Ć": "C"
+    };
+
+    function to_be_latn_format(char, option, lower) {
+        var latn_options = BE_MAP[char.toLowerCase()] || [char];
+        var latn = option < latn_options.length ? latn_options[option] : latn_options[0];
+        if (lower || latn === "") {
+            return latn;
+        } else {
+            return latn[0].toUpperCase() + latn.slice(1);
+        }
+    }
+
+    function to_be_latn(be, simple) {
+        var result = [];
+        var i = 0;
+        var prev_consonant = false;
+        var prev_l_soft = false;
+        while (i < be.length) {
+            var char = be[i];
+            var lower = char.toLowerCase();
+            if (CONSONANTS[lower]) {
+                prev_l_soft = false;
+                prev_consonant = true;
+                if (lower === L) {
+                    if (i + 1 < be.length && L_SOFT[be[i + 1].toLowerCase()]) {
+                        result.push(to_be_latn_format(char, 0, char === lower));
+                        prev_l_soft = true;
+                    } else {
+                        result.push(to_be_latn_format(char, 1, char === lower));
+                    }
+                } else if (CONSONANTS_SOFT[lower]) {
+                    if (i + 1 < be.length && be[i + 1].toLowerCase() === SOFT) {
+                        result.push(to_be_latn_format(char, 1, char === lower));
+                    } else {
+                        result.push(to_be_latn_format(char, 0, char === lower));
+                    }
+                } else {
+                    result.push(to_be_latn_format(char, 0, char === lower));
+                }
+            } else {
+                if (prev_consonant) {
+                    if (prev_l_soft) {
+                        result.push(to_be_latn_format(char, 2, char === lower));
+                    } else {
+                        result.push(to_be_latn_format(char, 0, char === lower));
+                    }
+                } else {
+                    result.push(to_be_latn_format(char, 1, char === lower));
+                }
+                prev_consonant = false;
+                prev_l_soft = false;
+            }
+            i++;
+        }
+        if (simple) {
+            return result.map(function (char) {
+                return SIMPLE_MAP[char] || char;
+            }).join("");
+        } else {
+            return result.join("");
+        }
+    }
+
+    function getMovieZone(url) {
+        var movieDubZone = "vz-db776870-f99.b-cdn.net";
+        var movieSubZone = "vz-a6ac2eca-066.b-cdn.net";
+        var seriesDubZone = "vz-96cbff6f-21c.b-cdn.net";
+        var seriesSubZone = "vz-3e43a6fc-37f.b-cdn.net";
+
+        if (url.indexOf("129236") !== -1)
+            return movieDubZone;
+
+        if (url.indexOf("142818") !== -1)
+            return movieSubZone;
+
+        if (url.indexOf("142530") !== -1)
+            return seriesDubZone;
+
+        if (url.indexOf("142819") !== -1)
+            return seriesSubZone;
+
+        return movieDubZone;
+    }
+
+    function getMovieUrl(player) {
+        if (player && player.indexOf("https://iframe.mediadelivery.net/embed/") !== -1) {
+            var zone = getMovieZone(player);
+            var bunnyPlayerId = player
+                .split("https://iframe.mediadelivery.net/embed/")[1]
+                .split("/")[1]
+                .split("?")[0];
+            return "https://" + zone + "/" + bunnyPlayerId;
+        }
+        return "#";
+    }
+
+    function getMovieUrl720p(player) {
+        return getMovieUrl(player) + "/play_720p.mp4";
+    }
+
+    // function getMovieUrl1080p(player) {
+    //     return getMovieUrl(player) + "/play_1080p.mp4";
+    // }
+
+    function filterMovies(filter) {
+        state.main.filter = filter;
+        state.main.selection = 0;
+        if (filter === "") {
+            state.main.filteredMovies = state.main.movies.slice(0, state.main.maxList);
+        } else {
+            var lowerCaseFilter = filter.toLowerCase();
+            var isDigitsFilter = lowerCaseFilter.match(/^\d+$/);
+            var cyrillicCharsFilter = lowerCaseFilter.split("").filter(function (char) {
+                return BE_MAP[char];
+            }).length > 0;
+            var result = state.main.movies.filter(
+                isDigitsFilter ? function (movie) {
+                    return movie.title_be_latn_en_lower.indexOf(lowerCaseFilter) !== -1 ||
+                        movie.title_en_lower.indexOf(lowerCaseFilter) !== -1 ||
+                        movie.id.toString() === lowerCaseFilter;
+                } : cyrillicCharsFilter ? function (movie) {
+                    return movie.title_be_lower.indexOf(lowerCaseFilter) !== -1;
+                } : function (movie) {
+                    return movie.title_be_latn_en_lower.indexOf(lowerCaseFilter) !== -1 ||
+                        movie.title_en_lower.indexOf(lowerCaseFilter) !== -1;
+                }
+            );
+            result.sort(function (a, b) {
+                if (isDigitsFilter) {
+                    if (a.id.toString() === lowerCaseFilter) {
+                        return -Infinity;
+                    }
+                    if (b.id.toString() === lowerCaseFilter) {
+                        return Infinity;
+                    }
+                }
+                var a_min = Math.min(
+                    a.title_be_lower === lowerCaseFilter ? -Infinity : Infinity,
+                    Math.min.apply(null, a.title_be_lower_words.map(function (word, index) {
+                        var word_index = word.indexOf(lowerCaseFilter);
+                        return word_index === -1 ? Infinity : word_index + index;
+                    })),
+                    a.title_be_latn_en_lower_words === lowerCaseFilter ? -Infinity : Infinity,
+                    Math.min.apply(null, a.title_be_latn_en_lower_words.map(function (word, index) {
+                        var word_index = word.indexOf(lowerCaseFilter);
+                        return word_index === -1 ? Infinity : word_index + index;
+                    })),
+                    a.title_be_latn_en_lower === lowerCaseFilter ? -Infinity : Infinity,
+                    Math.min.apply(null, a.title_en_lower_words.map(function (word, index) {
+                        var word_index = word.indexOf(lowerCaseFilter);
+                        return word_index === -1 ? Infinity : word_index + index;
+                    }))
+                );
+                var b_min = Math.min(
+                    b.title_be_lower === lowerCaseFilter ? -Infinity : Infinity,
+                    Math.min.apply(null, b.title_be_lower_words.map(function (word, index) {
+                        var word_index = word.indexOf(lowerCaseFilter);
+                        return word_index === -1 ? Infinity : word_index + index;
+                    })),
+                    b.title_be_latn_en_lower === lowerCaseFilter ? -Infinity : Infinity,
+                    Math.min.apply(null, b.title_be_latn_en_lower_words.map(function (word, index) {
+                        var word_index = word.indexOf(lowerCaseFilter);
+                        return word_index === -1 ? Infinity : word_index + index;
+                    })),
+                    b.title_en_lower === lowerCaseFilter ? -Infinity : Infinity,
+                    Math.min.apply(null, b.title_en_lower_words.map(function (word, index) {
+                        var word_index = word.indexOf(lowerCaseFilter);
+                        return word_index === -1 ? Infinity : word_index + index;
+                    }))
+                );
+                return a_min - b_min;
+            });
+            state.main.filteredMovies = result.slice(0, state.main.maxList);
+        }
+    }
+
+    function prettyDetails(details, maxItems) {
+        maxItems = maxItems || 100;
+        return (details || "").split(',').slice(0, maxItems).join(', ');
+    }
+
+    var PanelPage = {
+        view: function () {
+            return m("div", {
+                class: "panel" + (state.active === ACTIVE_PANEL ? " active" : ""),
+                onupdate: function (vnode) {
+                    if (state.active === ACTIVE_PANEL) {
+                        requestAnimationFrame(function () {
+                            var el = document.querySelector(".search-input");
+                            if (document.activeElement !== el && state.main.previousFiltersSelection === -1) {
+                                // click is important to reopen input keyboard when it was closed
+                                el.click();
+                                el.focus();
+                            } else {
+                                // this is second part of workaround when input keyboard was closed
+                                // we switch input focus to able to back focus with keyboard opening
+                                var selectedHistoryEl = document.querySelector(".search-history.selected");
+                                if (selectedHistoryEl && document.activeElement !== selectedHistoryEl) {
+                                    selectedHistoryEl.focus();
+                                }
+                            }
+                        });
+                    }
+                },
+                onkeydown: function (event) {
+                    if (event.keyCode === KEY_ENTER || event.keyCode === KEY_BACK) {
+                        state.active = ACTIVE_MAIN;
+                        state.main.previousFiltersSelection = -1;
+                        // update search history
+                        if (state.main.filter.length > 0) {
+                            state.main.previousFilters = state.main.previousFilters.filter(function (item) {
+                                return state.main.filter !== item;
+                            });
+                            if (state.main.previousFilters.length >= state.main.maxPreviousFiltersSize) {
+                                state.main.previousFilters.pop();
+                            }
+                            state.main.previousFilters.unshift(state.main.filter);
+                            localStorage.setItem("filters", JSON.stringify(state.main.previousFilters));
+                        }
+                        // if we use history filter then update search input value
+                        // this is workaround when empty or incorect input preserved 
+                        // to second search with not list of movies affect
+                        document.querySelector(".search-input").value = state.main.filter;
+                    } else if (event.keyCode === KEY_UP) {
+                        if (state.main.previousFiltersSelection >= 0) {
+                            state.main.previousFiltersSelection -= 1;
+                            if (state.main.previousFiltersSelection >= 0) {
+                                filterMovies(state.main.previousFilters[state.main.previousFiltersSelection]);
+                            } else {
+                                filterMovies(document.querySelector(".search-input").value);
+                            }
+                            event.preventDefault();
+                        }
+                    } else if (event.keyCode === KEY_DOWN) {
+                        if (state.main.previousFiltersSelection < state.main.previousFilters.length - 1) {
+                            state.main.previousFiltersSelection += 1;
+                            if (state.main.previousFiltersSelection >= 0) {
+                                filterMovies(state.main.previousFilters[state.main.previousFiltersSelection]);
+                            } else {
+                                filterMovies(document.querySelector(".search-input").value);
+                            }
+                            event.preventDefault();
+                        }
+                    }
+                    event.stopPropagation();
+                },
+                oninput: function (event) {
+                    filterMovies(document.querySelector(".search-input").value);
+                },
+            }, [
+                m("div", {class: "panel-item"}, [
+                    m("img", {class: "panel-item-icon", src: "images/search.svg", alt: "search"}),
+                    m("input", {class: "panel-item-text search-input", placeholder: "Search", tabindex: -1}),
+                ]),
+                state.main.previousFilters.map(function (filter, index) {
+                    return m("div", {class: "panel-item"}, [
+                        m("div", {
+                            class: "panel-item-text search-history" + (
+                                state.main.previousFiltersSelection === index ? " selected" : ""
+                            ), 
+                            tabindex: -1,
+                        }, filter),
+                    ]);
+                }),
+            ]);
+        }
+    };
+
+    var MainPage = {
+        view: function () {
+            return m("div", {
+                class: "main" + (state.active === ACTIVE_MAIN || state.active === ACTIVE_PANEL ? " active" : "")
+            }, [
+                m(PanelPage), 
+                m("div", {
+                class: "list" + (state.active === ACTIVE_MAIN ? " active" : ""),
+                tabindex: 0,
+                onupdate: function (vnode) {
+                    if (state.active === ACTIVE_MAIN) {
+                        requestAnimationFrame(function () {
+                            if (document.activeElement !== vnode.dom) {
+                                vnode.dom.focus({preventScroll: true});
+                            }
+                            if (state.main.selection < state.main.filteredMovies.length) {
+                                var element = document.getElementById(
+                                    "item-" + state.main.filteredMovies[state.main.selection].id
+                                );
+                                if (state.main.selection < state.main.rows) {
+                                    // scroll top
+                                    element.parentElement.scrollTo({
+                                        top: 0,
+                                        behavior: "smooth"
+                                    });
+                                } else if (state.main.selection >= 
+                                    state.main.filteredMovies.length - 
+                                    (state.main.filteredMovies.length % state.main.rows || state.main.rows)
+                                ) {
+                                    // scroll bottom
+                                    element.parentElement.scrollTo({
+                                        top: element.parentElement.scrollHeight,
+                                        behavior: "smooth"
+                                    });
+                                } else {
+                                    // scroll middle
+                                    var elementImage = element.querySelector(".item-image");
+                                    element.parentElement.scrollTo({
+                                        top: (
+                                            element.offsetTop - 
+                                            (element.parentElement.clientHeight / 2) + 
+                                            (elementImage.clientHeight / 2)
+                                        ),
+                                        behavior: "smooth"
+                                    });
+                                }
+                            }
+                        });
+                    }
+                },
+                onkeydown: function (event) {
+                    log("MainPage.onkeydown:" + event.keyCode);
+                    if (event.keyCode === KEY_LEFT) {
+                        if (state.main.selection % state.main.rows === 0) {
+                            state.active = ACTIVE_PANEL;
+                        } else {
+                            state.main.selection -= 1;
+                        }
+                    } else if (event.keyCode === KEY_RIGHT) {
+                        if (state.main.selection + 1 < state.main.filteredMovies.length &&
+                            state.main.selection % state.main.rows < state.main.rows - 1) {
+                            state.main.selection += 1;
+                        }
+                    } else if (event.keyCode === KEY_UP) {
+                        if (state.main.selection >= state.main.rows) {
+                            state.main.selection -= state.main.rows;
+                        }
+                    } else if (event.keyCode === KEY_DOWN) {
+                        if (state.main.selection < state.main.filteredMovies.length - state.main.rows) {
+                            state.main.selection += state.main.rows;
+                        }
+                    } else if (event.keyCode === KEY_ENTER) {
+                        if (state.main.selection < state.main.filteredMovies.length) {
+                            state.active = ACTIVE_DETAILS;
+                            state.details.movie = state.main.filteredMovies[state.main.selection];
+                        }
+                    }
+                    event.stopPropagation();
+                    event.preventDefault();
+                },
+            },  state.main.movies === null ? (
+                    m("div", {class: "loading"}, 
+                        m("img", {src: "images/loading.gif", alt: "loading"})
+                    )
+                ) :
+                state.main.loadError !== null ? (
+                    m("div", {class: "error"}, state.main.loadError)
+                ) : 
+                state.main.filteredMovies.map(function (movie, index) { 
+                    return m("div", {
+                        class: "item" + (index === state.main.selection ? " selected" : ""),
+                        id: "item-" + movie.id,
+                    }, m("a", {}, [
+                        m("div", {class: "item-image"}, [
+                            m("img", {class: "item-image-poster", src: movie.poster, alt: movie.title}), 
+                            movie.has_dubbing ? null :(
+                                m("img", {class: "item-image-subs", src: "images/subs.png", alt: ""})
+                            ),
+                        ]),
+                        m("div", {class: "item-title"}, "" + movie.title_be + " " + movie.year),
+                    ]));
+                })
+            )]);
+        }
+    };
+
+    var DetailsPage = {
+        view: function () {
+            return m("div", {
+                class: "details" + (state.active === ACTIVE_DETAILS ? " active" : ""),
+                tabindex: 1,
+                onupdate: function (vnode) {
+                    if (state.active === ACTIVE_DETAILS) {
+                        requestAnimationFrame(function () {
+                            if (document.activeElement !== vnode.dom) {
+                                vnode.dom.focus({preventScroll: true});
+                            }
+                            var selectedVideo = document.querySelector(".details-video.selected");
+                            if (selectedVideo) {
+                                var groupVideosListElement = selectedVideo.parentElement;
+                                var groupElement = groupVideosListElement.parentElement;
+                                var groupsListElement = groupElement.parentElement;
+                                
+                                if (state.details.groupSelection === 0) {
+                                    // scroll top
+                                    groupsListElement.scrollTo({
+                                        top: 0,
+                                        behavior: "smooth"
+                                    });
+                                } else if (
+                                    state.details.groupSelection === Object.keys(state.details.details).length - 1
+                                ) {
+                                    // scroll bottom
+                                    groupsListElement.scrollTo({
+                                        top: groupsListElement.scrollHeight,
+                                        behavior: "smooth"
+                                    });
+                                } else {
+                                    // scroll middle
+                                    groupsListElement.scrollTo({
+                                        top: (
+                                            groupElement.offsetTop - 
+                                            groupsListElement.offsetTop - 
+                                            (groupsListElement.clientHeight / 2) + 
+                                            (groupElement.clientHeight / 2)
+                                        ),
+                                        behavior: "smooth"
+                                    });
+                                }
+                                
+                                var videoRect = selectedVideo.getBoundingClientRect();
+                                var containerRect = groupVideosListElement.getBoundingClientRect();
+                                if (videoRect.left < containerRect.left) {
+                                    // scroll left
+                                    groupVideosListElement.scrollTo({
+                                        left: selectedVideo.offsetLeft - (containerRect.width - videoRect.width),
+                                        behavior: "smooth"
+                                    });
+                                } else if (videoRect.right > containerRect.right) {
+                                    // scroll right
+                                    groupVideosListElement.scrollTo({
+                                        left: selectedVideo.offsetLeft - videoRect.width,
+                                        behavior: "smooth"
+                                    });
+                                }
+                            }
+                        });
+                        // load list of available videos
+                        var currentTime = Date.now();
+                        if (
+                            !state.details.details && 
+                            !state.details.loadError && 
+                            state.details.loadLock + LOAD_LOCK_TIMEOUT < currentTime
+                        ) {
+                            state.details.loadLock = currentTime;
+                            fetch(DETAILS_URL + state.details.movie.id)
+                                .then(function (response) {
+                                    if (!response.ok) {
+                                        throw new Error("HTTP error! status: " + response.status);
+                                    }
+                                    return response.json();
+                                })
+                                .then(function (result) {
+                                    var groups = {};
+                                    var totalVideos = 0;
+                                    result["simple-api"].filter(function (video) {
+                                        return video.iframe.indexOf("https://iframe.mediadelivery.net/embed/") !== -1;
+                                    });
+                                    result["simple-api"].forEach(function (video) {
+                                        if (video.iframe.indexOf("https://iframe.mediadelivery.net/embed/") !== -1) {
+                                            var groupName = video.season && ("Сезон " + video.season) || "Відыё";
+                                            groups[groupName] = groups[groupName] || [];
+                                            groups[groupName].push(video);
+                                            totalVideos += 1;
+                                        }
+                                    });
+                                    state.details.details = groups;
+                                    state.details.totalVideos = totalVideos;
+                                    if (state.details.totalVideos >= state.details.minVideosToStorePosition) {
+                                        var storedPosition = JSON.parse(
+                                            localStorage.getItem("details-" + state.details.movie.id) || "{}"
+                                        );
+                                        state.details.groupSelection = storedPosition.groupSelection || 0;
+                                        state.details.episodeSelection = storedPosition.episodeSelection || 0;
+                                    }
+                                    m.redraw();
+                                })
+                                .catch(function (error) {
+                                    state.details.loadError = error;
+                                    m.redraw();
+                                });
+                        }
+                    }
+                },
+                onkeydown: function (event) {
+                    var group;
+                    if (event.keyCode === KEY_BACK) {
+                        state.active = ACTIVE_MAIN;
+                        state.details.movie = null;
+                        state.details.loadError = null;
+                        state.details.loadLock = Date.now() - LOAD_LOCK_TIMEOUT - 1;
+                        state.details.details = null;
+                        state.details.groupSelection = 0;
+                        state.details.episodeSelection = 0;
+                    } else if (event.keyCode === KEY_LEFT) {
+                        if (state.details.episodeSelection === 0) {
+                            state.active = ACTIVE_MAIN;
+                            state.details.movie = null;
+                            state.details.loadError = null;
+                            state.details.loadLock = Date.now() - LOAD_LOCK_TIMEOUT - 1;
+                            state.details.details = null;
+                            state.details.groupSelection = 0;
+                            state.details.episodeSelection = 0;
+                        } else {
+                            state.details.episodeSelection -= 1;
+                        }
+                    } else if (event.keyCode === KEY_RIGHT) {
+                        group = Object.keys(state.details.details)[state.details.groupSelection];
+                        if (state.details.episodeSelection < state.details.details[group].length - 1) {
+                            state.details.episodeSelection += 1;
+                        }
+                    } else if (event.keyCode === KEY_UP) {
+                        if (state.details.groupSelection > 0) {
+                            state.details.groupSelection -= 1;
+                            state.details.episodeSelection = 0;
+                        }
+                    } else if (event.keyCode === KEY_DOWN) {
+                        if (state.details.groupSelection < Object.keys(state.details.details).length - 1) {
+                            state.details.groupSelection += 1;
+                            state.details.episodeSelection = 0;
+                        }
+                    } else if (event.keyCode === KEY_ENTER) {
+                        if (state.details.totalVideos >= state.details.minVideosToStorePosition) {
+                            localStorage.setItem("details-" + state.details.movie.id, JSON.stringify({
+                                groupSelection: state.details.groupSelection,
+                                episodeSelection: state.details.episodeSelection,
+                            }));
+                        }
+                        state.active = ACTIVE_PLAYER;
+                        group = Object.keys(state.details.details)[state.details.groupSelection];
+                        var video = state.details.details[group][state.details.episodeSelection];
+                        state.player.video = getMovieUrl720p(video.iframe);
+                    }
+                    event.stopPropagation();
+                    event.preventDefault();
+                },
+            }, [
+                m("div", {class: "details-about"}, state.details.movie ? [
+                    m("div", {class: "details-image"}, [
+                        m("img", {class: "details-image-poster", src: state.details.movie.poster, alt: "poster"}),
+                        state.details.movie.has_dubbing ? null : (
+                            m("img", {class: "details-image-subs", src: "images/subs.png", alt: ""})
+                        ),
+                    ]),
+                    m("div", {class: "details-info"}, [
+                        m("div", {class: "details-info-title"}, 
+                            "«" + state.details.movie.title_be + "» " + state.details.movie.year),
+                        m("div", {class: "details-info-subtitle"}, 
+                            state.details.movie.title_be + " / " + 
+                            state.details.movie.title_en + " (" + state.details.movie.year + ")"),
+                        m("div", {class: "details-info-row"}, [
+                            m("div", {class: "details-info-col"}, [
+                                m("div", {class: "details-info-item"}, [
+                                    m("span", {class: "details-info-item-handle"}, "IMDb: "),
+                                    m("span", {class: "details-info-item-value"}, 
+                                        state.details.movie.imdb_rating / 10 + 
+                                        " (" + state.details.movie.imdb_vote + ")"),
+                                ]),
+                                m("div", {class: "details-info-item"}, state.details.movie.voice ? [
+                                    m("span", {class: "details-info-item-handle"}, "Агучка: "),
+                                    m("span", {class: "details-info-item-value"}, 
+                                        prettyDetails(state.details.movie.voice)),
+                                ] : []),
+                                m("div", {class: "details-info-item"}, state.details.movie.translate ?     [
+                                    m("span", {class: "details-info-item-handle"}, "Пераклад: "),
+                                    m("span", {class: "details-info-item-value"}, 
+                                        prettyDetails(state.details.movie.translate)),
+                                ] : []),
+                                m("div", {class: "details-info-item"}, [
+                                    m("span", {class: "details-info-item-handle"}, "Узрост: "),
+                                    m("span", {class: "details-info-item-value"},
+                                        state.details.movie.min_age),
+                                ]),
+                            ]),
+                            m("div", {class: "details-info-col"}, [
+                                m("div", {class: "details-info-item"}, [
+                                    m("span", {class: "details-info-item-handle"}, "Жанр: "),
+                                    m("span", {class: "details-info-item-value"},
+                                        prettyDetails(state.details.movie.genre)),
+                                ]),
+                                m("div", {class: "details-info-item"}, [
+                                    m("span", {class: "details-info-item-handle"}, "Краіна: "),
+                                    m("span", {class: "details-info-item-value"},
+                                        prettyDetails(state.details.movie.country)),
+                                ]),
+                                m("div", {class: "details-info-item"}, [
+                                    m("span", {class: "details-info-item-handle"}, "Рэжысёр: "),
+                                    m("span", {class: "details-info-item-value"},
+                                        prettyDetails(state.details.movie.director)),
+                                ]),
+                            ]),
+                            m("div", {class: "details-info-col"}, [
+                                m("div", {class: "details-info-item"}, [
+                                    m("span", {class: "details-info-item-handle"}, "Акторы: "),
+                                    m("span", {class: "details-info-item-value"},
+                                    prettyDetails(state.details.movie.actor, 7)),
+                                ]),
+                            ]),
+                        ]),
+                        
+                    ]),
+                    m("div", {class: "details-info-description"},
+                        state.details.movie && state.details.movie.description),
+                ] : "loading"),
+                m("div", {class: "details-group-list"}, 
+                    state.details.details ? Object.keys(state.details.details).map(function (groupName, groupIndex) {
+                        return m("div", {class: "details-group"}, [
+                            m("div", {class: "details-group-name"}, groupName + ":"),
+                            m("div", {class: "details-group-videos"}, 
+                                state.details.details[groupName].map(function (video, videoIndex) {
+                                    return m("div", {
+                                        class: "details-video" + (
+                                            state.details.groupSelection === groupIndex && 
+                                            state.details.episodeSelection === videoIndex ? 
+                                            " selected" : ""
+                                        )
+                                    }, (video.episode && ("Серыя " + video.episode)) || video.name || "Глядзець");
+                                })
+                            ),
+                        ]);
+                    }
+                ) : "loading")
+            ]);
+        }
+    };
+
+    var PlayerPage = {
+        view: function () {
+            return m("div", {class: "player-container" + (state.active === ACTIVE_PLAYER ? " active" : "")}, [
+                m("video", {
+                    tabindex: 2,
+                    class: "player",
+                    src: state.player.video,
+                    autoplay: true,
+                    controls: true,
+                    onupdate: function (vnode) {
+                        if (state.active === ACTIVE_PLAYER) {
+                            requestAnimationFrame(function () {
+                                if (document.activeElement !== vnode.dom) {
+                                    vnode.dom.focus({preventScroll: true});
+                                }
+                            });
+                        }
+                    },
+                    onkeydown: function (event) {
+                        if (event.keyCode === KEY_BACK) {
+                            document.querySelector(".player").pause();
+                            state.active = ACTIVE_DETAILS;
+                        } else if (event.keyCode === KEY_ENTER) {
+                            var videoElement = document.querySelector("video");
+                            var videoPlaying = (
+                                !videoElement.paused &&
+                                !videoElement.ended &&
+                                videoElement.readyState >= 2
+                            );
+                            if (videoPlaying) {
+                                document.querySelector("video").pause();
+                            } else {
+                                document.querySelector("video").play();
+                            }
+                        } else if (event.keyCode === KEY_LEFT) {
+                            document.querySelector("video").currentTime -= 30;
+                        } else if (event.keyCode === KEY_RIGHT) {
+                            document.querySelector("video").currentTime += 30;
+                        }
+                    },
+                })
+            ]);
+        }
+    };
+
+    var App = {
+        oninit: function () {
+            log("App.oninit");
+            fetch(LIST_URL)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error("HTTP error! status: " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function (result) {
+                    log("App.oninit.then:" + result.length);
+                    state.main.movies = result.map(function (movie) {
+                        movie.title_be = (movie.title_be || "").trim();
+                        movie.title_be_latn = to_be_latn(movie.title_be, false);
+                        movie.title_be_latn_en = to_be_latn(movie.title_be, true);
+                        movie.title_en = (movie.title_en || "").trim();
+                        movie.title_be_lower = movie.title_be.toLowerCase();
+                        movie.title_be_latn_en_lower = movie.title_be_latn_en.toLowerCase();
+                        movie.title_en_lower = movie.title_en.toLowerCase();
+                        movie.title_be_lower_words = movie.title_be_lower.split(" ");
+                        movie.title_be_latn_en_lower_words = movie.title_be_latn_en_lower.split(" ");
+                        movie.title_en_lower_words = movie.title_en_lower.split(" ");
+                        return movie;
+                    });
+                    state.main.movies.sort(function (a, b) {
+                        return b.custom.lastmod.localeCompare(a.custom.lastmod);
+                    });
+                    state.main.filteredMovies = state.main.movies.slice(0, state.main.maxList);
+                    m.redraw();
+                })
+                .catch(function (error) {
+                    log("App.oninit.catch:" + error + "<br>" + error.stack);
+                    state.main.loadError = error;
+                    m.redraw();
+                });
+        },
+        view: function () {
+            return m("div", {class: "container"}, [
+                m(MainPage),
+                m(DetailsPage),
+                m(PlayerPage),
+            ]);
+        }
+    };
+
+    m.mount(root, App);
+
+    document.addEventListener("keydown", function (event) {
+        log("keydown:" + event.keyCode);
+        m.redraw();
+    });
+    </script>
+</body>
+</html>

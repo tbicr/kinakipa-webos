@@ -1,0 +1,13 @@
+{
+  "id": "kinakipa",
+  "version": "1.0.0",
+  "vendor": "Kinakipa",
+  "type": "web",
+  "main": "index.html",
+  "title": "Kinakipa",
+  "icon": "images/icon.png",
+  "largeIcon": "images/icon.png",
+  "bgColor": "#2a2e3c",
+  "requiredPermissions": ["network"],
+  "disableBackHistoryAPI": true
+}
